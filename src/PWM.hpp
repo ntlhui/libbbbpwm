@@ -24,8 +24,14 @@
  */
 
 // Includes
+#define _XOPEN_SOURCE 500
 #include <cstdlib>
 #include <assert.h>
+#include <cstdio>
+#include <sys/types.h>
+#include <unistd.h>
+#include <ftw.h>
+#include <string>
 
 // Constants Definitions
 #define	PWM_P8_13	0
@@ -59,6 +65,12 @@ namespace PWM{
 			uint8_t _pulseWidth;
 			bool _polarity;
 			bool _running;
+			uint8_t _capeMgrNo;
+			/**
+			 * Checks the file tree walk (ftw) entry for bone_capemgr number.
+			 */
+			static int _checkCapeMgr(const char* fpath, const struct stat* sb, 
+				   int tflag, struct FTW *ftwbuf);	
 	}
 }
 
