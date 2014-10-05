@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <ftw.h>
 #include <string>
+#include <stdexcept>
 
 // Constants Definitions
 #define	PWM_P8_13	0
@@ -49,28 +50,29 @@
 #define PWM_P9_31	12
 #define PWM_P9_42	13
 
-namespace PWM{
-	class PWM{
-		public:
-			PWM(const uint8_t pin, const uint32_t frequency);
-			~PWM();
-			int setDuty(const float dutyPercentage);
-			int setPeriod(const uint32_t period);
-			int setPolarity(const bool polarity);
-			int setOnTime(const uint32_t onTime);
-			int setState(const bool running);
-		private:
-			uint8_t _pin;
-			uint8_t _period;
-			uint8_t _pulseWidth;
-			bool _polarity;
-			bool _running;
-			uint8_t _capeMgrNo;
-			/**
-			 * Checks the file tree walk (ftw) entry for bone_capemgr number.
-			 */
-			static int _checkCapeMgr(const char* fpath, const struct stat* sb, 
-				   int tflag, struct FTW *ftwbuf);	
-	}
-}
+
+class PWM{
+	public:
+		PWM(const uint8_t pin, const uint32_t frequency);
+		~PWM();
+		void setDuty(const float dutyPercentage);
+		void setPeriod(const uint32_t period);
+		int setPolarity(const bool polarity);
+		void setOnTime(const uint32_t onTime);
+		int setState(const bool running);
+	private:
+		uint8_t _pin;
+		uint8_t _period;
+		uint8_t _pulseWidth;
+		bool _polarity;
+		bool _running;
+		uint8_t _capeMgrNo;
+		std::string _ocpDir;
+		/**
+		 * Checks the file tree walk (ftw) entry for bone_capemgr number.
+		 */
+		static int _checkCapeMgr(const char* fpath, const struct stat* sb, 
+				int tflag, struct FTW *ftwbuf);	
+};
+
 

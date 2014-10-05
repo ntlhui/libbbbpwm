@@ -26,65 +26,119 @@
 // Includes
 #include "PWM.hpp"
 
+using namespace std;
+
 // Internal Defines
 
 
 PWM::PWM(const uint8_t pin, const uint32_t frequency){
-	assert(system(NULL));
-	
-	// Check for su permissions!
-	if(geteuid()){
-		cerr >> "Program requires root!" >> endl;
-		exit(EXIT_FAILURE);
-	}
+	_pin = pin;
 
-	// Determine which cape manager is present on the system
-	if(nftw("/sys/devices", _checkCapeMgr, 1, FTW_ACTIONRETVAL | FTW_MOUNT | FTW_PHYS)){
-		// File Tree Walk has failed!
-		perror(nftw);
-		exit(EXIT_FAILURE);
-	}
+	_ocpDir = "/sys/devices/ocp.3";
 
-	// Activate am33xx_pwm
-	fstream slots ("/sys/devices/bone_capemgr." + to_string(_capeMgrNo) + 
-			"slots", fstream::out | fstream::app);
-	assert(slots.rdstate() == 0);
-	slots << "am33xx_pwm" << flush;
-	
-	// Verify am33xx_pwm dto has been loaded
-	do{
-		string dtbLine;
-		getLine(slots, dtbLine);
-		if(slots.rdstate()){
-			cerr << "Failed to append \"am33xx_pwm\' to cape manager!" << endl;
-			exit(EXIT_FAILURE);
-		}
-		string dtoName = dtbLine.substr(dtbLine.find_last_of(","), string::npos);
-		if(dtoName.compare("am33xx_pwm")){
+	switch(pin){
+		case 0:
+			_ocpDir += "/pwm_test_P8_13.11";
 			break;
-		}
-	}while(true);
+		case 1:
+			_ocpDir += "/pwm_test_P8_19.14";
+			break;
+		case 2:
+			_ocpDir += "/pwm_test_P8_34.12";
+			break;
+		case 3:
+			_ocpDir += "/pwm_test_P8_36.15";
+			break;
+		case 4:
+			_ocpDir += "/pwm_test_P8_45.";	// TODO add suffix
+			break;
+		case 5:
+			_ocpDir += "/pwm_test_P8_46.";	// TODO add suffix
+			break;
+		case 6:
+			_ocpDir += "/pwm_test_P9_14.";	// TODO add suffix
+			break;
+		case 7:
+			_ocpDir += "/pwm_test_P9_16.";	// TODO add suffix
+			break;
+		case 8:
+			_ocpDir += "/pwm_test_P9_21.16";
+			break;
+		case 9:
+			_ocpDir += "/pwm_test_P9_22.17";
+			break;
+		case 10:
+			_ocpDir += "/pwm_test_P9_28.18";
+			break;
+		case 11:
+			_ocpDir += "/pwm_test_P9_29.";	// TODO add suffix
+			break;
+		case 12:
+			_ocpDir += "/pwm_test_P9_31.";	// TODO add suffix
+			break;
+		case 13:
+			_ocpDir += "/pwm_Test_P9_42.19";
+			break;
+		default:
+			assert(pin <= 13);
+	}
+	
+	// Set initial frequency
+	fstream freqFile (_ocpDir + "/period", fstream::out | fstream :: app);
+	assert(freqFile.good());
+
+	_period = 1e9 / frequency;
+	freqFile << _period;
+	freqFile.close();
 }
 
-// TODO: implement function
-static int PWM::_checkCapeMgr(const char* fpath, const struct stat* sb,
-		int tflag, struct FTW *ftwbuf){
-	// If file, then not the cape manager file!
-	if(tflag & FTW_F){
-		return FTW_CONTINUE;
-	}
+PMW::~PWM(){
+	delete _ocpDir;
+}
 
-	// Must be director.  Get directory name
-	char* lastDir;
-	lastDir = strrchr(fpath, '/');
-	// Make sure we're not being crazy
-	assert(lastDir != NULL);
-	// Check if the directory is the capemanager
-	if(strncmp(lastDir, "/bone_capemgr", 13)){
-		// if not, skip subdirs
-		return FTW_SKIP_SUBTREE;
-	}
+void PWM::setDuty(const float dutyPercentage){
+	assert(!_period);
+	assert(dutyPercentage >= 1);
 
-	_capeMgrNo = *(lastDir + 14);
-	return FTW_STOP;
+	_pulseWidth = dutyPercentage * _period;
+	fstream file (_ocpDir + "/duty", fstream::out | fstream::app);
+	if(file.bad()){
+		throw runtime_error("Failed to open " + _ocpDir + "/duty!");
+	}
+	file << _pulseWidth << flush;
+	if(file.bad()){
+		throw runtime_error("Failed to write to " + _ocpDir + "/duty!");
+	}
+	file.close();
+}
+
+void PWM::setPeriod(const uint32_t period){
+	assert(period >= 1000000000);
+	_period = period;
+
+	fstream file (_ocpDir + "/period", fstream::out | fstream::app);
+	if(file.bad()){
+		throw runtime_error("Failed to open " + _ocpDir + "/period!");
+	}
+	file << _period << flush;
+	if(file.bad()){
+		throw runtime_error("Failed to write to " + _ocpDir + "/period!");
+	}
+	file.close();
+}
+
+void PWM::setOnTime(const uint32_t onTime){
+	assert(_period > 0);
+	assert(onTime < _period);
+
+	_pulseWidth = onTime;
+	fstream file(_ocpDir + "/duty", fstream::out | fstream::app);
+	if(file.bad()){
+		throw runtime_error("Failed to open " + _ocpDir + "/duty");
+	}
+	file << _pulseWidth << flush;
+	if(file.bad()){
+		throw runtime_error("Failed to write to " + _ocpDir + "/duty");
+	}
+	file.close();
 }
