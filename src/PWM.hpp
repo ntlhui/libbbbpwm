@@ -53,6 +53,8 @@
 #define PWM_P9_42	13
 #define PWM_PULSE_HIGH	0
 #define PWM_PULSE_LOW	1
+#define PWM_ON	1
+#define PWM_OFF	0
 
 class PWM{
 	public:
@@ -62,7 +64,7 @@ class PWM{
 		void setPeriod(const uint32_t period);
 		void setPolarity(const bool polarity);
 		void setOnTime(const uint32_t onTime);
-		int setState(const bool running);
+		void setState(const bool running);
 	private:
 		uint8_t _pin;
 		uint32_t _period;
