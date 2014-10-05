@@ -85,6 +85,7 @@ PWM::PWM(const uint8_t pin, const uint32_t frequency){
 	
 	// Set initial frequency
 	fstream freqFile (_ocpDir + "/period", fstream::out | fstream :: app);
+	cout << _ocpDir << endl;
 	assert(freqFile.good());
 
 	_period = 1e9 / frequency;
@@ -128,6 +129,7 @@ void PWM::setPeriod(const uint32_t period){
 }
 
 void PWM::setOnTime(const uint32_t onTime){
+	cout << _period << endl;
 	assert(_period > 0);
 	assert(onTime < _period);
 
@@ -139,6 +141,20 @@ void PWM::setOnTime(const uint32_t onTime){
 	file << _pulseWidth << flush;
 	if(file.bad()){
 		throw runtime_error("Failed to write to " + _ocpDir + "/duty");
+	}
+	file.close();
+}
+
+void PWM::setPolarity(const bool polarity){
+	_polarity = polarity;
+
+	fstream file(_ocpDir + "/polarity", fstream::out | fstream::app);
+	if(file.bad()){
+		throw runtime_error("Failed to open " + _ocpDir + "/polarity");
+	}
+	file << _polarity << flush;
+	if(file.bad()){
+		throw runtime_error("Failed to write to " + _ocpDir + "/polarity");
 	}
 	file.close();
 }
