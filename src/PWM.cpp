@@ -92,8 +92,8 @@ PWM::PWM(const uint8_t pin, const uint32_t frequency){
 	freqFile.close();
 }
 
-PMW::~PWM(){
-	delete _ocpDir;
+PWM::~PWM(){
+
 }
 
 void PWM::setDuty(const float dutyPercentage){
