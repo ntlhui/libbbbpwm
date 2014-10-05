@@ -4,8 +4,9 @@
 using namespace std;
 
 int main(int argc, char** argv){
-	PWM testPwm (PWM_P8_13, 40);
+	PWM testPwm (PWM_P8_13, 50);
 	testPwm.setOnTime(1000000);
+	testPwm.setPolarity(PWM_PULSE_HIGH);
 	uint32_t onTime = 1000000;
 	while(true){
 		cin >> onTime;
