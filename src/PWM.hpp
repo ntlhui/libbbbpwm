@@ -34,6 +34,7 @@
 #include <string>
 #include <stdexcept>
 #include <fstream>
+#include <iostream>
 
 // Constants Definitions
 #define	PWM_P8_13	0
@@ -50,7 +51,8 @@
 #define PWM_P9_29	11
 #define PWM_P9_31	12
 #define PWM_P9_42	13
-
+#define PWM_PULSE_HIGH	0
+#define PWM_PULSE_LOW	1
 
 class PWM{
 	public:
@@ -58,13 +60,13 @@ class PWM{
 		~PWM();
 		void setDuty(const float dutyPercentage);
 		void setPeriod(const uint32_t period);
-		int setPolarity(const bool polarity);
+		void setPolarity(const bool polarity);
 		void setOnTime(const uint32_t onTime);
 		int setState(const bool running);
 	private:
 		uint8_t _pin;
-		uint8_t _period;
-		uint8_t _pulseWidth;
+		uint32_t _period;
+		uint32_t _pulseWidth;
 		bool _polarity;
 		bool _running;
 		uint8_t _capeMgrNo;
