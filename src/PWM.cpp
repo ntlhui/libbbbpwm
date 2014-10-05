@@ -158,3 +158,17 @@ void PWM::setPolarity(const bool polarity){
 	}
 	file.close();
 }
+
+void PWM::setState(const bool running){
+	_running = running;
+
+	fstream file(_ocpDir + "/run", fstream::out | fstream::app);
+	if(file.bad()){
+		throw runtime_error("Failed to open " + _ocpDir + "/run");
+	}
+	file << _running << flush;
+	if(file.bad()){
+		throw runtime_error("Failed to write to " + _ocpDir + "/run");
+	}
+	file.close();
+}
